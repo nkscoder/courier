@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/courier.svg)](https://pypi.org/project/courier/)
 [![Python](https://img.shields.io/pypi/pyversions/courier.svg)](https://pypi.org/project/courier/)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![Django](https://img.shields.io/badge/Django-3.2%2B-green.svg)](https://www.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -29,7 +30,7 @@ A **generic, reusable Django courier app** for calculating zone-based shipping c
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.8–3.12 (including **3.12**)
 - Django 3.2+
 
 ---
