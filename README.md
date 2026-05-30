@@ -1,7 +1,7 @@
 # Courier — Generic Django Zone-Based Shipping Cost Calculator
 
-[![PyPI version](https://badge.fury.io/py/courier.svg)](https://pypi.org/project/courier/)
-[![Python](https://img.shields.io/pypi/pyversions/courier.svg)](https://pypi.org/project/courier/)
+[![PyPI version](https://badge.fury.io/py/nkscoder-courier.svg)](https://pypi.org/project/nkscoder-courier/)
+[![Python](https://img.shields.io/pypi/pyversions/nkscoder-courier.svg)](https://pypi.org/project/nkscoder-courier/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![Django](https://img.shields.io/badge/Django-3.2%2B-green.svg)](https://www.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -38,13 +38,13 @@ A **generic, reusable Django courier app** for calculating zone-based shipping c
 ## Installation
 
 ```bash
-pip install courier
+pip install nkscoder-courier
 ```
 
 With Django Admin CSV import/export:
 
 ```bash
-pip install "courier[admin]"
+pip install "nkscoder-courier[admin]"
 ```
 
 From GitHub:
@@ -197,6 +197,10 @@ python manage.py test courier
 
 ## Changelog
 
+### 1.1.1
+- Renamed PyPI package to `nkscoder-courier` (name `courier` was taken on PyPI)
+- Fixed GitHub Actions publish workflow with `PYPI_API_TOKEN`
+
 ### 1.1.0
 - Generic built-in `CourierCountry` / `CourierRegion` models (no `core` dependency)
 - New `calculate_courier_cost()` service API
@@ -216,7 +220,7 @@ python manage.py test courier
 | **Author** | Nitesh Kumar Singh |
 | **GitHub** | [github.com/nkscoder](https://github.com/nkscoder) |
 | **Repository** | [github.com/nkscoder/courier](https://github.com/nkscoder/courier) |
-| **PyPI** | [pypi.org/project/courier](https://pypi.org/project/courier) |
+| **PyPI** | [pypi.org/project/nkscoder-courier](https://pypi.org/project/nkscoder-courier) |
 
 ---
 

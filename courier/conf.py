@@ -9,7 +9,7 @@ DEFAULTS = {
     "AUTHOR_NAME": "Nitesh Kumar Singh",
     "AUTHOR_HANDLE": "nkscoder",
     "GITHUB_URL": "https://github.com/nkscoder/courier",
-    "PYPI_URL": "https://pypi.org/project/courier/",
+    "PYPI_URL": "https://pypi.org/project/nkscoder-courier/",
     "SEO_SITE_NAME": "Django Courier Shipping Calculator",
     "SEO_DESCRIPTION": (
         "Generic open-source Django courier and shipping cost calculator with "
