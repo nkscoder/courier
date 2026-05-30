@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "courier"
+version = "1.0.0"
+description = "Django zone-based courier shipping cost calculator — by Nitesh Kumar Singh (nkscoder)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Nitesh Kumar Singh", email = "nkscoder@gmail.com" },
+]
+maintainers = [
+    { name = "Nitesh Kumar Singh", email = "nkscoder@gmail.com" },
+]
+keywords = [
+    "django",
+    "courier",
+    "shipping",
+    "shipping-calculator",
+    "zone-based-shipping",
+    "weight-based-pricing",
+    "india-courier",
+    "ecommerce",
+    "logistics",
+    "nkscoder",
+    "nitesh-kumar-singh",
+    "python",
+    "django-courier",
+    "shipping-cost",
+    "delivery-pricing",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "Django>=3.2",
+]
+
+[project.optional-dependencies]
+admin = ["django-import-export>=3.0"]
+
+[project.urls]
+Homepage = "https://github.com/nkscoder/courier"
+Documentation = "https://github.com/nkscoder/courier#readme"
+Repository = "https://github.com/nkscoder/courier"
+"Bug Tracker" = "https://github.com/nkscoder/courier/issues"
+"Author GitHub" = "https://github.com/nkscoder"
+PyPI = "https://pypi.org/project/courier/"
+
+[tool.setuptools.packages.find]
+include = ["courier*"]
+
+[tool.setuptools.package-data]
+courier = ["migrations/*.py"]
