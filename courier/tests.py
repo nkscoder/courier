@@ -1,34 +1,46 @@
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
-from courier.views import get_amount
+from courier.calculator import apply_pricing, normalize_weight
 
 
-class GetAmountTests(SimpleTestCase):
-    @patch("courier.views.WeightCost.objects")
-    def test_india_weight_slabs(self, mock_weight_cost):
+class NormalizeWeightTests(SimpleTestCase):
+    def test_grams(self):
+        self.assertEqual(normalize_weight(500, "gram"), Decimal("500"))
+
+    def test_kgs(self):
+        self.assertEqual(normalize_weight(1.5, "kgs"), Decimal("1500"))
+
+    def test_lbs(self):
+        self.assertEqual(normalize_weight(1, "lbs"), Decimal("453.592"))
+
+
+@override_settings(
+    COURIER_DOMESTIC_USE_WEIGHT_MULTIPLIER=True,
+    COURIER_WEIGHT_INCREMENT_KG="0.500",
+    COURIER_INTERNATIONAL_SURCHARGE_PERCENT=22,
+)
+class ApplyPricingTests(SimpleTestCase):
+    def test_domestic_multiplier(self):
         cost = MagicMock()
         cost.amount = Decimal("10")
-        mock_weight_cost.filter.return_value.filter.return_value.first.return_value = cost
-
-        c_zone = MagicMock()
-        c_zone.zone = MagicMock()
-        c_zone.country.name = "India"
-
-        amount = get_amount(2.0, c_zone, surcharge=False)
+        amount = apply_pricing(
+            Decimal("2.0"),
+            cost,
+            domestic_pricing=True,
+            apply_surcharge=False,
+        )
         self.assertEqual(amount, Decimal("40"))
 
-    @patch("courier.views.WeightCost.objects")
-    def test_international_surcharge(self, mock_weight_cost):
+    def test_international_surcharge(self):
         cost = MagicMock()
         cost.amount = Decimal("100")
-        mock_weight_cost.filter.return_value.filter.return_value.first.return_value = cost
-
-        c_zone = MagicMock()
-        c_zone.zone = MagicMock()
-        c_zone.country.name = "United States"
-
-        amount = get_amount(1.0, c_zone, surcharge=True)
+        amount = apply_pricing(
+            Decimal("1.0"),
+            cost,
+            domestic_pricing=False,
+            apply_surcharge=True,
+        )
         self.assertEqual(amount, Decimal("122"))

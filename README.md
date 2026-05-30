@@ -1,4 +1,4 @@
-# Courier — Django Zone-Based Shipping Cost Calculator
+# Courier — Generic Django Zone-Based Shipping Cost Calculator
 
 [![PyPI version](https://badge.fury.io/py/courier.svg)](https://pypi.org/project/courier/)
 [![Python](https://img.shields.io/pypi/pyversions/courier.svg)](https://pypi.org/project/courier/)
@@ -7,21 +7,23 @@
 
 **Author:** [Nitesh Kumar Singh](https://github.com/nkscoder) · **GitHub:** [@nkscoder](https://github.com/nkscoder)
 
-A reusable **Django courier app** for calculating zone-based shipping costs by weight, quantity, and destination. Built by **Nitesh Kumar Singh (nkscoder)** for e-commerce, logistics, and any Django project that needs flexible courier pricing.
+A **generic, reusable Django courier app** for calculating zone-based shipping costs by weight, quantity, and destination. Works out of the box with built-in country/region models, or plugs into your existing location tables. Built by **Nitesh Kumar Singh (nkscoder)**.
 
-> **Keywords:** django courier · shipping cost calculator · zone-based shipping · weight pricing · india courier zones · nkscoder · nitesh kumar singh · python shipping app
+> **Keywords:** django courier · generic shipping calculator · zone-based shipping · weight pricing · reusable django app · nkscoder · nitesh kumar singh · python shipping
 
 ---
 
 ## Features
 
-- **Zone-based pricing** — map countries and Indian states to shipping zones
+- **Generic by design** — built-in `CourierCountry` / `CourierRegion` models, no `core` app required
+- **Configurable pricing** — domestic multiplier, international surcharge %, weight units, thresholds
+- **Zone-based pricing** — map countries and regions to shipping zones
 - **Weight slab lookup** — automatic cost lookup by weight brackets
 - **Multi-unit support** — grams, kilograms, and pounds (`gram`, `kgs`, `lbs`)
-- **International surcharge** — optional 22% surcharge for non-India destinations
 - **JSON API endpoint** — real-time shipping quotes via HTTP GET
-- **Python API** — call `courier_cost()` directly from your checkout flow
-- **Django Admin** — manage zones, connections, and weight costs (optional CSV import/export)
+- **Python API** — call `calculate_courier_cost()` from checkout, cart, or background jobs
+- **Custom zone resolver** — plug in your own location models with one settings hook
+- **Django Admin** — manage countries, regions, zones, and weight costs
 
 ---
 
@@ -29,63 +31,48 @@ A reusable **Django courier app** for calculating zone-based shipping costs by w
 
 - Python 3.8+
 - Django 3.2+
-- A host project with a `core` app providing `Country` and `State` models
 
 ---
 
 ## Installation
 
-### From PyPI (recommended)
-
 ```bash
 pip install courier
 ```
 
-### From GitHub
-
-```bash
-pip install git+https://github.com/nkscoder/courier.git
-```
-
-### With Django Admin import/export
+With Django Admin CSV import/export:
 
 ```bash
 pip install "courier[admin]"
 ```
 
+From GitHub:
+
+```bash
+pip install git+https://github.com/nkscoder/courier.git
+```
+
 ---
 
-## Setup
-
-### Step 1 — Add to `INSTALLED_APPS`
+## Quick start
 
 ```python
 # settings.py
 INSTALLED_APPS = [
     ...
-    "core",      # must provide Country and State models
     "courier",
 ]
-```
 
-### Step 2 — Run migrations
+COURIER_DOMESTIC_COUNTRY_NAME = "India"
+COURIER_INTERNATIONAL_SURCHARGE_PERCENT = 22
+```
 
 ```bash
 python manage.py migrate courier
 ```
 
-### Step 3 — Configure zones in Django Admin
-
-1. **Zone** — create shipping zones (e.g. Zone A, Zone B)
-2. **Zone Connection** — link zones to countries and/or Indian states
-3. **Weight Cost** — set price per weight slab for each zone
-
-### Step 4 — Wire up URLs
-
 ```python
 # urls.py
-from django.urls import path, include
-
 urlpatterns = [
     path("courier/", include("courier.urls")),
 ]
@@ -95,10 +82,32 @@ urlpatterns = [
 
 ## Usage
 
+### Python API (recommended)
+
+```python
+from courier.calculator import calculate_courier_cost
+
+total = calculate_courier_cost(
+    weight=1.5,
+    quantity=2,
+    weight_unit="kgs",
+    country_id=country.pk,
+    region_id=region.pk,  # optional for domestic regions
+)
+```
+
+Backward-compatible alias:
+
+```python
+from courier import courier_cost
+
+total = courier_cost(weight=500, quantity=1, weight_unit="gram", country=1, state=3)
+```
+
 ### HTTP API
 
 ```
-GET /courier/?weight=500&quantity=2&weight_unit=gram&country=1&state=3
+GET /courier/?weight=500&quantity=2&weight_unit=gram&country=1&region=3
 ```
 
 Response:
@@ -109,36 +118,67 @@ Response:
 
 | Parameter | Description |
 |-----------|-------------|
-| `weight` | Package weight (number) |
+| `weight` | Package weight |
 | `quantity` | Number of packages |
 | `weight_unit` | `gram`, `kgs`, or `lbs` |
-| `country` | Country PK from your `core.Country` model |
-| `state` | State PK (required for India) |
+| `country` | Country PK |
+| `region` or `state` | Region PK (for domestic destinations) |
 
-### Python API
+---
+
+## Configuration
+
+All settings use the `COURIER_` prefix:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `COURIER_COUNTRY_MODEL` | `courier.CourierCountry` | Country model label |
+| `COURIER_REGION_MODEL` | `courier.CourierRegion` | Region/state model label |
+| `COURIER_DOMESTIC_COUNTRY_NAME` | `India` | Fallback domestic country name |
+| `COURIER_INTERNATIONAL_SURCHARGE_PERCENT` | `22` | Surcharge for non-domestic destinations |
+| `COURIER_HEAVY_WEIGHT_THRESHOLD_KG` | `20` | Heavy shipment threshold |
+| `COURIER_WEIGHT_PADDING_KG` | `0.500` | Padding added to billable weight |
+| `COURIER_WEIGHT_INCREMENT_KG` | `0.500` | Domestic weight multiplier increment |
+| `COURIER_DEFAULT_WEIGHT_UNIT` | `gram` | Default unit for API requests |
+| `COURIER_DOMESTIC_USE_WEIGHT_MULTIPLIER` | `True` | Per-increment pricing for domestic |
+| `COURIER_ZONE_RESOLVER` | `None` | Custom `(country_id, region_id) -> (connection, surcharge)` |
+
+### Plug into your own location models
 
 ```python
-from courier.views import courier_cost
+# settings.py
+COURIER_COUNTRY_MODEL = "myapp.Country"
+COURIER_REGION_MODEL = "myapp.State"
 
-total = courier_cost(
-    weight=1.5,
-    quantity=1,
-    weight_unit="kgs",
-    country=country_id,
-    state=state_id,
-)
-print(total)  # shipping cost as integer
+def resolve_courier_zone(country_id, region_id):
+    from courier.models import ZoneConnection
+    # your lookup logic
+    return connection, apply_surcharge
+
+COURIER_ZONE_RESOLVER = resolve_courier_zone
 ```
+
+Mark domestic countries with `is_domestic=True` on your model, or rely on `COURIER_DOMESTIC_COUNTRY_NAME`.
+
+---
+
+## Admin setup
+
+1. **Courier Country** — add destinations; mark domestic with `is_domestic`
+2. **Courier Region** — add states/provinces under domestic countries
+3. **Zone** — create shipping zones (Zone A, Zone B, …)
+4. **Zone Connection** — link zones to countries and/or regions
+5. **Weight Cost** — set price per weight slab for each zone
 
 ---
 
 ## How pricing works
 
-1. Resolve the destination **zone** from country/state via `ZoneConnection`
-2. Convert weight to the correct unit and compute total weight
+1. Resolve the destination **zone** from country/region via `ZoneConnection`
+2. Normalize weight to grams and compute total billable weight
 3. Look up the matching **WeightCost** slab for that zone
-4. For India: multiply slab rate by weight increments (500 g units)
-5. For international: apply a **22% surcharge** on top of the base rate
+4. **Domestic**: multiply slab rate by weight increments (configurable)
+5. **International**: apply configurable **surcharge %** on the base rate
 
 ---
 
@@ -149,28 +189,22 @@ git clone git@github.com:nkscoder/courier.git
 cd courier
 pip install -e ".[admin]"
 python manage.py migrate
-python manage.py runserver
+python manage.py test courier
 ```
-
-### Build & publish to PyPI
-
-```bash
-pip install build twine
-python -m build
-twine upload dist/*
-```
-
-Or tag a release on GitHub — the included GitHub Action publishes automatically.
 
 ---
 
 ## Changelog
 
+### 1.1.0
+- Generic built-in `CourierCountry` / `CourierRegion` models (no `core` dependency)
+- New `calculate_courier_cost()` service API
+- Configurable settings via `COURIER_*` prefix
+- Optional custom `COURIER_ZONE_RESOLVER` hook
+- Improved admin with search and filters
+
 ### 1.0.0
-- PyPI packaging with `pyproject.toml`
-- Code cleanup and modern Django app config
-- SEO & documentation by **Nitesh Kumar Singh (nkscoder)**
-- Optional `django-import-export` admin support
+- Initial PyPI release by **Nitesh Kumar Singh (nkscoder)**
 
 ---
 
